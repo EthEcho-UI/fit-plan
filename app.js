@@ -181,18 +181,16 @@ function vToday() {
   if (prevSleep && prevSleep < 7) tips.push({ w: 1, t: `Spánek jen ${nf(prevSleep, 1)} h – cíl je 7–8 h. Při nedospání roste hlad a klesá regenerace.` });
   return (S.meta.pu ? '' : `<div class="card"><h2>Nastav si profil</h2><p class="small mute" style="margin-top:0">Výchozí hodnoty jsou jen ukázka. Připoj server (Nastavení → Server) a profil se stáhne z PC, nebo ho zadej ručně.</p><button class="primary" data-a="tab" data-k="set">Otevřít nastavení</button></div>`) + `
   <div class="card">
-    <div class="row" style="gap:16px;flex-wrap:nowrap">
-      <div class="ring ${over ? 'over' : ''}" style="--v:${pct}"><div><div><span class="big" style="font-size:26px">${nf(Math.abs(left))}</span><br><span class="small mute">${over ? 'kcal přes' : 'kcal zbývá'}</span></div></div></div>
-      <div class="grow stack">
-        <div class="small mute">Týden ${weekIdx(d) + 1} · ${phase}</div>
-        <div><b>${nf(tot.kcal)}</b> / ${nf(tg.kcal)} kcal</div>
-        <div class="small mute">Spotřeba dne ≈ ${nf(tg.tdee)} kcal (BMR ${nf(tg.bmr)})</div>
-        <button class="primary" data-a="add">+ Přidat jídlo</button>
-      </div>
+    <div class="hero">
+      <div class="num ${over ? 'over' : ''}">${nf(Math.abs(left))}</div>
+      <div class="lbl">${over ? 'kcal přes cíl' : 'kcal zbývá'} · ${nf(tot.kcal)} z ${nf(tg.kcal)} · týden ${weekIdx(d) + 1}, ${phase}</div>
+      <div class="bar thick ${over ? 'over' : ''}"><i style="width:${pct}%"></i></div>
+      <div class="small mute" style="margin:8px 0 18px">Spotřeba dne ≈ ${nf(tg.tdee)} kcal (BMR ${nf(tg.bmr)})</div>
+      <button class="primary" style="width:100%" data-a="add">+ Přidat jídlo</button>
     </div>
-    <div class="stack" style="margin-top:14px">
-      ${macroRow('Bílkoviny', tot.protein, tg.protein, 'var(--p)')}
-      ${macroRow('Sacharidy', tot.carbs, tg.carbs, 'var(--c)')}
+    <div class="stack" style="margin-top:22px">
+      ${macroRow('Bílkoviny', tot.protein, tg.protein, 'var(--accent)')}
+      ${macroRow('Sacharidy', tot.carbs, tg.carbs, 'var(--ink)')}
       ${macroRow('Tuky', tot.fat, tg.fat, 'var(--f)')}
     </div>
     ${tips.map(t => `<div class="tip ${t.w ? 'warn' : ''}" style="margin-top:10px">${esc(t.t || t)}</div>`).join('')}
@@ -224,7 +222,7 @@ function vToday() {
 
 function entryHtml(e, edit = true) {
   return `<div class="entry"><div><span class="nm">${esc(e.name)}</span><br><span class="small mute">${e.t || ''} · ${MEALS[e.meal] || ''} · B ${nf(e.protein)} S ${nf(e.carbs)} T ${nf(e.fat)}${e.confidence ? ' · jistota: ' + ({ low: 'nízká', medium: 'střední', high: 'vysoká' }[e.confidence]) : ''}</span></div>
-    <div style="text-align:right"><b>${nf(e.kcal)}</b> <span class="small mute">kcal</span><br>${edit ? `<button class="sm ghost" data-a="editentry" data-id="${e.id}">upravit</button><button class="sm ghost danger" data-a="delentry" data-id="${e.id}">✕</button>` : ''}</div></div>`;
+    <div style="text-align:right"><span class="k">${nf(e.kcal)}</span> <span class="small mute">kcal</span><br>${edit ? `<button class="sm ghost" data-a="editentry" data-id="${e.id}">upravit</button><button class="sm ghost danger" data-a="delentry" data-id="${e.id}">✕</button>` : ''}</div></div>`;
 }
 function recents() {
   const seen = new Set(), out = [];
@@ -302,10 +300,10 @@ function vPlan() {
 
 /* ---------- charts ---------- */
 function lineChart({ x0, x1, y0, y1, series = [], band, xt = [], w = 640, h = 230 }) {
-  const L = 38, R = 10, T = 10, B = 22, sx = x => L + (x - x0) / (x1 - x0 || 1) * (w - L - R), sy = y => h - B - (y - y0) / (y1 - y0 || 1) * (h - T - B);
+  const L = 46, R = 10, T = 10, B = 26, sx = x => L + (x - x0) / (x1 - x0 || 1) * (w - L - R), sy = y => h - B - (y - y0) / (y1 - y0 || 1) * (h - T - B);
   const step = (y1 - y0) > 12 ? 2 : (y1 - y0) > 5 ? 1 : 0.5, yt = []; for (let v = Math.ceil(y0 / step) * step; v <= y1; v += step) yt.push(v);
   let s = yt.map(v => `<line x1="${L}" x2="${w - R}" y1="${sy(v)}" y2="${sy(v)}" style="stroke:var(--line)"/><text x="${L - 5}" y="${sy(v) + 3}" text-anchor="end">${nf(v, 1)}</text>`).join('');
-  s += xt.map(([x, l]) => `<text x="${sx(x)}" y="${h - 6}" text-anchor="middle">${l}</text>`).join('');
+  s += xt.map(([x, l]) => `<text x="${sx(x)}" y="${h - 7}" text-anchor="middle">${l}</text>`).join('');
   if (band) s += `<polygon points="${band.hi.map(p => sx(p[0]) + ',' + sy(p[1])).join(' ')} ${[...band.lo].reverse().map(p => sx(p[0]) + ',' + sy(p[1])).join(' ')}" style="fill:var(--accent);opacity:.15"/>`;
   for (const se of series) {
     if (!se.pts.length) continue;
@@ -451,7 +449,8 @@ function renderModal() {
       <textarea id="addtext" rows="3" placeholder="Např.: 2 vejce, 2 krajíce žitného chleba s máslem, 200 g jogurtu. Nebo název produktu / jídla z restaurace." style="margin:10px 0">${esc(a.text)}</textarea>
       <div class="row" style="margin-bottom:10px"><label class="btn">Přiložit fotku<input type="file" accept="image/*" data-c="photo" hidden></label>${a.img ? `<img class="thumb" src="${a.img}" alt="Náhled"><button class="sm ghost danger" data-a="rmphoto">✕</button>` : ''}</div>
       ${a.err ? `<div class="tip warn" style="margin-bottom:10px">${esc(a.err)}</div>` : ''}
-      <div class="row"><button class="primary grow" data-a="estimate" ${a.busy ? 'disabled' : ''}>${a.busy ? '<span class="spin"></span> Odhaduju (10–60 s)…' : 'Odhadnout živiny (Claude)'}</button><button data-a="manual" ${a.busy ? 'disabled' : ''}>Ručně</button></div>
+      <div class="stack" style="gap:8px"><button class="primary" data-a="estimateadd" ${a.busy ? 'disabled' : ''}>${a.busy ? '<span class="spin"></span>Odhaduju (10–60 s)…' : 'Odhadnout a přidat do deníku'}</button>
+      <div class="row"><button class="grow" data-a="estimate" ${a.busy ? 'disabled' : ''}>Odhadnout a zkontrolovat</button><button data-a="manual" ${a.busy ? 'disabled' : ''}>Ručně</button></div></div>
       <p class="small mute">Můžeš uvést gramáž – přesnější než odhad z fotky. U balených produktů Claude zkusí najít etiketu na webu.</p>`;
   } else {
     const r = a.res, tot = sumItems(r.items);
@@ -483,17 +482,23 @@ function downscale(file, max = 1280) {
     img.src = url;
   });
 }
-async function runEstimate() {
-  const a = ui.add; a.busy = true; a.err = ''; renderModal();
+async function runEstimate(autoAdd) {
+  const a = ui.add;
+  if (!hasServer()) { a.err = 'Server na PC není nastavený – otevři Další → Server a vyplň adresu a token. Do té doby můžeš jídlo přidat ručně.'; renderModal(); return; }
+  a.busy = true; a.err = ''; renderModal();
   try {
     const r = await api('/api/estimate', { method: 'POST', body: JSON.stringify({ text: a.text, image: a.img, meal: MEALS[a.meal] }) });
-    const d = await r.json();
-    if (r.status === 401) throw new Error('Špatný token – zkontroluj Nastavení → Server.');
+    if (r.status === 401) throw new Error('Špatný token – zkontroluj Další → Server.');
+    let d; try { d = await r.json(); } catch { throw new Error(`Server vrátil neočekávanou odpověď (${r.status}). Zkontroluj adresu serveru v Další → Server.`); }
     if (!r.ok) throw new Error(d.error || r.status);
     if (!ui.add) return;
-    if (!d.items?.length) { a.err = d.notes || 'Nic jsem nerozpoznal – doplň popis.'; }
-    else a.res = d;
-  } catch (e) { if (ui.add) a.err = (e instanceof TypeError) ? 'PC není dostupné (zkontroluj Tailscale a Server v Nastavení). Můžeš přidat jídlo ručně.' : String(e.message || e); }
+    if (!d.items?.length) a.err = d.notes || 'Nic jsem nerozpoznal – doplň popis.';
+    else if (autoAdd) {
+      const e = entryFromRes({ ...a, res: d });
+      (mut(ui.date).food ||= []).push(e);
+      ui.add = null; renderModal(); save(); rerender(); toast(`Přidáno: ${e.name} · ${nf(e.kcal)} kcal`); return;
+    } else a.res = d;
+  } catch (e) { if (ui.add) a.err = (e instanceof TypeError) ? 'PC není dostupné (zkontroluj Tailscale a Server v Další → Server). Můžeš přidat jídlo ručně.' : String(e.message || e); }
   if (ui.add) { a.busy = false; renderModal(); }
 }
 function entryFromRes(a) {
@@ -523,7 +528,8 @@ document.addEventListener('click', async ev => {
     case 'closeadd': ui.add = null; renderModal(); return;
     case 'meal': ui.add.meal = D.k; if (ui.add.res) { renderModal(); } else { document.querySelectorAll('[data-a=meal]').forEach(x => x.classList.toggle('on', x.dataset.k === D.k)); } return;
     case 'rmphoto': ui.add.img = null; renderModal(); return;
-    case 'estimate': runEstimate(); return;
+    case 'estimate': runEstimate(false); return;
+    case 'estimateadd': runEstimate(true); return;
     case 'manual': ui.add.res = { meal_name: '', items: [blankItem()], confidence: null, notes: '', sources: [] }; renderModal(); return;
     case 'back': ui.add.res = null; renderModal(); return;
     case 'additem': ui.add.res.items.push(blankItem()); renderModal(); return;

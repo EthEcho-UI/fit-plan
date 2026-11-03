@@ -1,5 +1,5 @@
 // App-shell cache so the PWA opens offline. Bump VERSION when shipping changes.
-const VERSION = 'fitplan-v2';
+const VERSION = 'fitplan-v3';
 const SHELL = ['./', 'index.html', 'app.js', 'style.css', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
